@@ -44,7 +44,6 @@ Then add it:
 ```lua
 local HIGHLIGHT_SOURCES = {
     ["com.apple.keylayout.Ukrainian"] = true,
-    ["com.apple.keylayout.Russian"] = true,
 }
 ```
 
