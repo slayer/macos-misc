@@ -1,7 +1,7 @@
 # Keyboard layout indicator
 
-A thin coloured bar along the bottom of the active screen, shown while a
-non-Latin keyboard layout is selected.
+A thin blue-and-yellow stripe down the left edge of the active screen, shown
+while a non-Latin keyboard layout is selected.
 
 macOS already shows the current input source in the menu bar, but the menu bar
 is hidden in fullscreen — exactly where it is easiest to start typing in the
@@ -25,10 +25,11 @@ Everything worth changing sits at the top of `init.lua`:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `BAR_HEIGHT` | `2` | Bar thickness in points |
-| `BAR_COLOR` | amber | Any Hammerspoon colour table |
+| `BORDER_WIDTH` | `3` | Stripe thickness in points |
+| `BORDER_COLOR_TOP` | blue | Upper half; any Hammerspoon colour table |
+| `BORDER_COLOR_BOTTOM` | yellow | Lower half; any Hammerspoon colour table |
 | `POLL_INTERVAL` | `0.1` | How often the layout is checked, in seconds |
-| `HIGHLIGHT_SOURCES` | Ukrainian | Input source IDs that light up the bar |
+| `HIGHLIGHT_SOURCES` | Ukrainian | Input source IDs that light up the stripe |
 
 ### Setting your own layout
 
@@ -53,10 +54,17 @@ non-Latin name, so their ID contains no recognisable English word at all.
 
 ## How it works
 
-The bar is an `hs.canvas` overlay at `windowLevels.overlay`, with
+The stripe is an `hs.canvas` overlay at `windowLevels.overlay`, with
 `canJoinAllSpaces` and `stationary` behaviour so it survives Space switches and
-draws above fullscreen windows. `clickActivating(false)` lets clicks pass
-straight through.
+draws above fullscreen windows.
+
+The canvas spans the entire screen and paints only its left edge, so it must
+not intercept input: `clickActivating(false)` keeps it from raising Hammerspoon,
+and `canvasMouseEvents(false, false, false, false)` leaves the window without
+mouse tracking, so clicks fall through to the windows underneath.
+
+A bottom bar was the first design, but a few points along the bottom edge is
+easy to miss in peripheral vision; a vertical edge is much easier to catch.
 
 Two implementation notes, both learned the hard way:
 
@@ -75,10 +83,11 @@ stops working.
 hs -c 'print(layoutIndicatorState())'
 ```
 
-Prints the current input source, whether the bar is shown, whether the poll
-timer is alive, the screen it considers active, and the bar's actual frame.
+Prints the current input source, whether the stripe is shown, whether the poll
+timer is alive, the screen it considers active, and the canvas frame (which
+matches the full screen size, not the stripe).
 
-- `poller=false` — the timer died; the bar will be frozen wherever it last was.
+- `poller=false` — the timer died; the stripe will be frozen where it last was.
 - `activeScreen` and `barFrame` disagreeing — position is not being applied.
 
 ## Known limitations
